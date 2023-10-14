@@ -1,0 +1,3 @@
+Parser les lignes :
+Quand virgule alors exadecimal (couleur ?)
+split avec les espaces
