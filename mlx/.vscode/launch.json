@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "/Users/julienmoulines/42/fdf/mlx",
+      "program": "/Users/julienmoulines/42/fdf/mlx/build/Debug/outDebug"
+    }
+  ]
+}

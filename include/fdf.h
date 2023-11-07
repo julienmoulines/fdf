@@ -13,21 +13,36 @@
 typedef struct	s_point
 {
     int x;
+	int	x_iso;
     int y;
+	int	y_iso;
     int valeur;
 }	t_point;
 
-typedef struct s_map_ligne
+typedef struct s_angle_and_more
 {
-    t_point				*points;
-	struct s_map_ligne	*next;
-}	t_map_ligne;
+    void 	*mlx;
+    void 	*win;
+	double 	angle;
+	double 	scale_x;
+    double 	scale_y;
+	double	scale_z;
+    int		center_x;
+    int		center_y;
+	int		map_width;
+    int		map_height;
+    int		x_offset;
+    int		y_offset;
+}	t_angle_and_more;
 
-typedef struct s_map
-{
-	int 		nombre_de_lignes;
-    t_map_ligne *premiere_ligne;
-}	t_map;
+typedef struct	s_data {
+	void	*img;
+	char	*addr;
+	int		bits_per_pixel;
+	int		line_length;
+	int		endian;
+}				t_data;
+
 
 
 # ifndef WIN_WIDTH
