@@ -21,12 +21,14 @@ typedef struct	s_point
 
 typedef struct s_angle_and_more
 {
+	int		fd;
     void 	*mlx;
     void 	*win;
 	double 	angle;
 	double 	scale_x;
     double 	scale_y;
 	double	scale_z;
+	double	cosinus;
     int		center_x;
     int		center_y;
 	int		map_width;
@@ -46,11 +48,11 @@ typedef struct	s_data {
 
 
 # ifndef WIN_WIDTH
-#  define WIN_WIDTH  1440 // Largeur de la fenêtre
+#  define WIN_WIDTH  2560 // Largeur de la fenêtre
 # endif
 
 # ifndef WIN_HEIGHT
-#define WIN_HEIGHT 850 // Hauteur de la fenêtre
+#define WIN_HEIGHT 1300// Hauteur de la fenêtre
 # endif
 
 # ifndef BUTTON_WIDTH 

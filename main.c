@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jmouline <jul.moulines@free.fr>            +#+  +:+       +#+        */
+/*   By: jmouline <jmouline@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/06 23:58:09 by jmouline          #+#    #+#             */
-/*   Updated: 2023/11/07 17:49:54 by jmouline         ###   ########.fr       */
+/*   Updated: 2023/11/14 03:25:18 by jmouline         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,10 +127,72 @@ t_point	**ft_stock_map(int fd, char	*fichier_map, t_angle_and_more *mlx)
 		i++;
 	}
 	ft_init_x_y(map, mlx->map_height, width);
+	mlx->map_width = width;
 	printf("longueur : %d\nlargeur : %d\n", mlx->map_height, width);
 	ft_print_matrice(map, mlx->map_height, width);
 	return (map);
 }
+
+void	ft_draw_map_line(t_point **map, t_angle_and_more *m, int x1, int y1, int x2, int y2)
+{
+	(void)map;
+	int		dx = abs(x2 - x1);
+	int		dy = abs(y2 - y1);
+	int		sx = (x1 < x2) ? 1 : -1;
+	int		sy = (y1 < y2) ? 1 : -1;
+	int		err = dx - dy;
+
+	while (1)
+	{
+		mlx_pixel_put(m->mlx, m->win, x1, y1, 0x00FF00);
+		if (x1 == x2 && y1 == y2)
+			break;
+		int err2 = 2 * err;
+		if (err2 > -dy)
+		{
+			err -= dy;
+			x1 += sx;
+		}
+		if (err2 < dx)
+		{
+			err += dx;
+			y1 += sy;
+		}
+	}
+}
+
+void	ft_draw_map_lines(t_point **map, t_angle_and_more *m)
+{
+	int		i;
+	int		j;
+
+	i = 0;
+	j = 0;
+
+	while (i < m->map_height)
+	{
+		while (j < m->map_width)
+		{
+			// Dessiner les lignes vers les points adjacents
+			if (j < m->map_width - 1)
+				ft_draw_map_line(map, m, m->x_offset + (map[i][j].x - map[i][j].y) * m->cosinus,
+								m->y_offset + (map[i][j].x + map[i][j].y) * sin(m->angle) * m->scale_y - map[i][j].valeur * m->scale_z,
+								m->x_offset + (map[i][j + 1].x - map[i][j + 1].y) * m->cosinus,
+								m->y_offset + (map[i][j + 1].x + map[i][j + 1].y) * sin(m->angle) * m->scale_y - map[i][j + 1].valeur * m->scale_z);
+			
+			if (i < m->map_height - 1)
+				ft_draw_map_line(map, m, m->x_offset + (map[i][j].x - map[i][j].y) * m->cosinus,
+								m->y_offset + (map[i][j].x + map[i][j].y) * sin(m->angle) * m->scale_y - map[i][j].valeur * m->scale_z,
+								m->x_offset + (map[i + 1][j].x - map[i + 1][j].y) * m->cosinus,
+								m->y_offset + (map[i + 1][j].x + map[i + 1][j].y) * sin(m->angle) * m->scale_y - map[i + 1][j].valeur * m->scale_z);
+
+			j++;
+		}
+		j = 0;
+		i++;
+	}
+}
+
 
 void	ft_draw_map_point(t_point **map, t_angle_and_more *m)
 {
@@ -167,46 +229,79 @@ void	*ft_init_window(t_point **map, t_angle_and_more *angle_and_more)
 	angle_and_more->win = mlx_new_window(angle_and_more->mlx,
 		WIN_WIDTH, WIN_HEIGHT, "FDF by Caedus");
 	angle_and_more->angle = M_PI / 4; // Angle isométrique en radians
-	angle_and_more->center_x = WIN_WIDTH / 2; // Centre de la fenêtre
-	angle_and_more->center_y = WIN_HEIGHT / 2;
-	angle_and_more->scale_x = 15;
-	angle_and_more->scale_y = 15;
-	angle_and_more->scale_z = 1;
+	angle_and_more->center_x = WIN_WIDTH / 2 + 100; // Centre de la fenêtre
+	angle_and_more->center_y = WIN_HEIGHT / 2 - 100;
+	angle_and_more->scale_x = 10;
+	angle_and_more->scale_y = 10;
+	angle_and_more->scale_z = 10;
 	angle_and_more->x_offset = angle_and_more->center_x - (angle_and_more->map_width * angle_and_more->scale_x) / 2;;
 	angle_and_more->y_offset = angle_and_more->center_y - (angle_and_more->map_height * angle_and_more->scale_y) / 2;;
+	angle_and_more->cosinus = cos(angle_and_more->angle) * angle_and_more->scale_x;
 
+	ft_draw_map_lines(map, angle_and_more);
 	//ft_draw_map_point(map, angle_and_more);
 
 	return (angle_and_more->mlx);
 }
 
+void	free_map(t_angle_and_more *angle_and_more, t_point ***map)
+{
+	int	x;
+	int	y;
+
+	y = 0;
+	while (y < angle_and_more->map_height)
+	{
+		x = 0;
+		while (x < angle_and_more->map_width)
+		{
+			free(map[y][x]);
+			x++;
+		}
+		free(map[y]);
+		y++;
+	}
+	//free(map);
+}
+
+int	leave(t_angle_and_more *angle_and_more, t_point **map)
+{
+	(void)map;
+	//free_map(angle_and_more, &map);
+	close(angle_and_more->fd);
+	exit(1);
+	return 0;
+}
+
+int	key(int key, t_angle_and_more *angle_and_more, t_point **map)
+{
+	(void)angle_and_more;
+	if (key == 65307)
+		leave(angle_and_more, map);
+	return 0;
+}
 
 int main(int argc, char *argv[])
 {
     t_point 			**map;
 	t_angle_and_more	*angle_and_more;
-	t_data				*img;
-    int fd;
+	// t_data				*img;
 
    
 	(void)argc;
 	angle_and_more = malloc(sizeof(t_angle_and_more));
     // Initialisation de MiniLibX et chargement de la carte
-    fd = open(argv[1], O_RDONLY);
-    map = ft_stock_map(fd, argv[1], angle_and_more);
+   	angle_and_more->fd = open(argv[1], O_RDONLY);
+    map = ft_stock_map(angle_and_more->fd, argv[1], angle_and_more);
 	ft_init_window(map, angle_and_more);
+	mlx_hook(angle_and_more->win, 17, 0, leave, &angle_and_more);
+	mlx_key_hook(angle_and_more->win, key, &angle_and_more);
+	
+	// img->img = mlx_new_image(angle_and_more->mlx, 1920, 1080);
 
-
-	img->img = mlx_new_image(angle_and_more->mlx, 1920, 1080);
-
-	img->addr = mlx_get_data_addr(img->img, &img->bits_per_pixel, &img->line_length, &img->endian);
+	// img->addr = mlx_get_data_addr(img->img, &img->bits_per_pixel, &img->line_length, &img->endian);
 	
     mlx_loop(angle_and_more->mlx); // Lancer la boucle de rendu MiniLibX
-
-    // Fermer le fichier et libérer la mémoire (à implémenter)
-   // close(fd);
-    //ft_free_map(map);
-
     return (0);
 }
 
